@@ -3,6 +3,13 @@ import cutlass
 import cutlass.cute as cute
 from cutlass.cute.runtime import from_dlpack
 
+"""
+Improved upton tiled version with multiple outputs/thread
+Instead of one thread owning C[i,j]
+it computes C[i+0, j], C[i+1, j], C[i+2, j], C[i+3, j] i.e 4 rows in its column
+
+"""
+
 
 @cute.kernel
 def gemm_kernel(A: cute.Tensor, B: cute.Tensor, C: cute.Tensor, M: cutlass.Constexpr, N: cutlass.Constexpr, K: cutlass.Constexpr):

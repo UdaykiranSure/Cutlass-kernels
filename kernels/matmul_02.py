@@ -4,6 +4,11 @@ import cutlass.cute as cute
 from cutlass.cute.runtime import from_dlpack
 
 
+"""
+Using shared memory to reduce the bytes transfered by Tiling
+"""
+
+
 BM = 16
 BN = 16
 BK = 16
