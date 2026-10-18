@@ -1,8 +1,15 @@
+import sys
+from pathlib import Path
+
 import torch
 import cutlass
 import cutlass.cute as cute
 from cutlass.cute.runtime import from_dlpack
 
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from benchmark_kernel import benchmark
 """
 Improved upton tiled version with multiple outputs/thread
 Instead of one thread owning C[i,j]
@@ -114,6 +121,8 @@ def run_gemm(A, B):
     return C
 
 if __name__ == "__main__":
+
+    
     torch.manual_seed(0)
 
     tests = [(256,256,256), (1024, 1024, 1024), (1024, 4096, 1024), (1024, 1024, 4096)]
@@ -130,5 +139,14 @@ if __name__ == "__main__":
             (C - reference).abs().max().item())
         print("Correct:", torch.allclose(C, reference, rtol=1e-4, atol=1e-4))
 
-        
+    if profiling:
+        benchmark(
+            launch_gemm,
+            warmup=1,
+            repeats=1,
+            tests=[(256, 256, 256)],
+        )
+    else:
+        benchmark(launch_gemm)
 
+        

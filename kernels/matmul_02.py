@@ -1,8 +1,15 @@
+import sys
+from pathlib import Path
+
 import torch
 import cutlass
 import cutlass.cute as cute
 from cutlass.cute.runtime import from_dlpack
 
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from benchmark_kernel import benchmark
 
 """
 Using shared memory to reduce the bytes transfered by Tiling
@@ -118,5 +125,5 @@ if __name__ == "__main__":
         print(f"Max absolute error: ({M, N, K})",
             (C - reference).abs().max().item())
         print("Correct:", torch.allclose(C, reference, rtol=1e-4, atol=1e-4))
-
+    benchmark(launch_gemm)
         
