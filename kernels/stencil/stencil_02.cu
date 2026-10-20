@@ -24,15 +24,15 @@ __global__ void stencil_kernel(float *in, float *out, unsigned int N){
         in_s[threadIdx.z][threadIdx.y][threadIdx.x] = in[i *N*N + j*N + k];
     }
 
-    if( i >=0 && i < N && j >= 0 && j < N && k >= 0 && k < N){
-        if(threadIdx.x > 0 && threadIdx.x < blockDim.x-1 && threadIdx.y > 0 && threadIdx.y < blockDim.y-1){
+    if( i >=1 && i < N-1 && j >= 1 && j < N-1 && k >= 1 && k < N-1){
+        if(threadIdx.x >= 1 && threadIdx.x < blockDim.x-1 && threadIdx.y >= 1 && threadIdx.y < blockDim.y-1 && threadIdx.z >= 1 && threadIdx.z < blockDim.z-1){
             out[i *N*N + j *N + k] = c0 * in[threadIdx.z * N*N + threadIdx.y*N + threadIdx.x] + 
                                     c1 * ( in_s[(threadIdx.z-1) ][ threadIdx.y][ threadIdx.x] + 
                                             in_s[(threadIdx.z+1)][threadIdx.y][threadIdx.x] +
                                             in_s[threadIdx.z ][ (threadIdx.y-1)][ threadIdx.x] + 
                                             in_s[threadIdx.z ][ (threadIdx.y+1)][ threadIdx.x] + 
-                                            in_s[threadIdx.z ][ threadIdx.y][ (threadIdx.z-1)] + 
-                                            in_s[threadIdx.z ][ threadIdx.y][ (threadIdx.z+1)] );
+                                            in_s[threadIdx.z ][ threadIdx.y][ (threadIdx.x-1)] + 
+                                            in_s[threadIdx.z ][ threadIdx.y][ (threadIdx.x+1)] );
         }    
 
     }
@@ -61,8 +61,8 @@ void stencil_gpu(float *in, float *out, unsigned int N){
     //Kernel Execution
     startTime(&timer);
     dim3 numThreadsPerBlock(BLOCK_DIM, BLOCK_DIM, BLOCK_DIM);
-    dim3 numBlocks((N + BLOCK_DIM - 1)/BLOCK_DIM,(N + BLOCK_DIM - 1)/BLOCK_DIM, (N + BLOCK_DIM - 1)/BLOCK_DIM);
-    stencil_kernel<<<numThreadsPerBlock, numBlocks>>>(input, output, N);
+    dim3 numBlocks((N + OUT_TILE_DIM - 1)/OUT_TILE_DIM,(N + OUT_TILE_DIM - 1)/OUT_TILE_DIM, (N + OUT_TILE_DIM - 1)/OUT_TILE_DIM);
+    stencil_kernel<<<numBlocks, numThreadsPerBlock>>>(input, output, N);
     stopTime(&timer);
     printElapsedTime(timer, "Kernel Time:");
 
