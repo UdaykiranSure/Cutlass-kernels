@@ -56,6 +56,7 @@ void stencil_gpu(float *in, float *out, unsigned int N){
     dim3 numThreadsPerBlock(BLOCK_DIM, BLOCK_DIM, BLOCK_DIM);
     dim3 numBlocks((N + BLOCK_DIM - 1)/BLOCK_DIM,(N + BLOCK_DIM - 1)/BLOCK_DIM, (N + BLOCK_DIM - 1)/BLOCK_DIM);
     stencil_kernel<<<numBlocks, numThreadsPerBlock>>>(input, output, N);
+    cudaDeviceSynchronize();
     stopTime(&timer);
     printElapsedTime(timer, "Kernel Time:");
 
